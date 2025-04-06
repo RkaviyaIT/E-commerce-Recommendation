@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Recommendations</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        input { padding: 10px; margin: 10px; }
+        button { padding: 10px; cursor: pointer; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>Enter Customer ID for Recommendations</h2>
+    <input type="text" id="customerId" placeholder="Customer ID">
+    <button onclick="getRecommendations()">Get Recommendations</button>
+
+    <div id="results"></div>
+
+    <script>
+        function getRecommendations() {
+            let customerId = document.getElementById("customerId").value;
+            if (!customerId) {
+                alert("Please enter a Customer ID");
+                return;
+            }
+
+            fetch(`http://127.0.0.1:5000/recommend?customer_id=${customerId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = "";  // Clear previous results
+
+                    if (data.error) {
+                        resultsDiv.innerHTML = `<p style="color:red;">${data.error}</p>`;
+                    } else {
+                        let recommendations = data.recommendations;
+                        if (recommendations.length === 0) {
+                            resultsDiv.innerHTML = "<p>No recommendations found.</p>";
+                        } else {
+                            let html = "<h3>Recommended Products:</h3><ul>";
+                            recommendations.forEach(product => {
+                                html += `<li><b>${product.Product_ID}</b>: ${product.Category} - $${product.Price}</li>`;
+                            });
+                            html += "</ul>";
+                            resultsDiv.innerHTML = html;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching recommendations:", error);
+                    document.getElementById("results").innerHTML = "<p style='color:red;'>Error fetching recommendations</p>";
+                });
+        }
+    </script>
+
+</body>
+</html>
